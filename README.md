@@ -1,0 +1,4 @@
+- 👋 Hi, I’m @ayazabbas
+- 👀 I’m interested in DevOps, Data Engineering, Blockchain, AI
+- 🌱 I’m currently learning Blockchain development
+- 📫 How to reach me [@AyazAbbas_](https://twitter.com/AyazAbbas_) on twitter
