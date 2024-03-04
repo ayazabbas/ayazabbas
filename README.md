@@ -1,4 +1,4 @@
 - 👋 Hi, I’m Ayaz Abbas
-- 👀 I’m interested in DevOps, Data Engineering, Blockchain, AI
+- 👀 I’m interested in Computer Infrastructure, AI and Blockchain
 - 🌱 I’m currently developing my skills in Golang and Python
 - 📫 How to reach me - [@AyazAbbas_](https://twitter.com/AyazAbbas_) on twitter, [Ayaz Abbas](https://www.linkedin.com/in/ayaz-abbas/) on LinkedIn
