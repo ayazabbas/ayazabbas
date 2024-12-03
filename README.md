@@ -1,4 +1,1 @@
-- 👋 hi, I’m ayaz
-- 👀 crypto degen
-- 🌱 developing my rust skillset
-- 📫 reach me - [Ayaz Abbas](https://www.linkedin.com/in/ayaz-abbas/) on LinkedIn
+- 👋 hi, I’m ayaz I do crypto stuff
