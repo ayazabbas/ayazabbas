@@ -1,1 +1,1 @@
-- 👋 hi, I’m ayaz I do crypto stuff
+👋 hi, I’m ayaz I do crypto stuff
