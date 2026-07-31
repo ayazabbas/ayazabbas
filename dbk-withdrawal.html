@@ -1,0 +1,1149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f5ef">
+  <title>DBK Withdrawal Recovery</title>
+  <meta name="description" content="Static recovery tool for one canonical DBK Chain withdrawal to Ethereum.">
+  <style>
+:root {
+  color-scheme: light;
+  --bg: #f7f5ef;
+  --ink: #171717;
+  --muted: #68645d;
+  --line: #d8d2c4;
+  --panel: #fffdf7;
+  --accent: #0f766e;
+  --accent-dark: #0b4f4a;
+  --warn: #9a3412;
+  --bad: #b42318;
+  --ok: #146c43;
+  --shadow: 0 18px 55px rgba(35, 31, 22, 0.08);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body {
+  margin: 0;
+  color: var(--ink);
+  background:
+    linear-gradient(120deg, rgba(15, 118, 110, 0.08), transparent 38%),
+    linear-gradient(180deg, #fffaf0 0, var(--bg) 360px);
+  min-height: 100svh;
+}
+button, input { font: inherit; }
+button {
+  border: 0;
+  border-radius: 8px;
+  min-height: 46px;
+  padding: 0 16px;
+  color: white;
+  background: var(--accent);
+  font-weight: 750;
+  touch-action: manipulation;
+}
+button:disabled { opacity: .48; cursor: not-allowed; }
+button:not(:disabled):active { transform: translateY(1px); }
+button.secondary, .icon-button { color: var(--ink); background: #ebe5d7; }
+a { color: var(--accent-dark); font-weight: 700; }
+code {
+  font-family: "SFMono-Regular", Consolas, ui-monospace, monospace;
+  font-size: .9em;
+  overflow-wrap: anywhere;
+}
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -60px;
+  background: var(--ink);
+  color: white;
+  padding: 10px 14px;
+  border-radius: 8px;
+  z-index: 10;
+}
+.skip-link:focus { top: 12px; }
+:focus-visible {
+  outline: 3px solid rgba(15, 118, 110, .35);
+  outline-offset: 3px;
+}
+.topbar, main {
+  width: min(1040px, calc(100% - 28px));
+  margin: 0 auto;
+}
+.topbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 28px 0 18px;
+}
+.eyebrow {
+  margin: 0 0 8px;
+  color: var(--accent-dark);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+h1, h2, p { margin-top: 0; }
+h1 {
+  max-width: 720px;
+  margin-bottom: 0;
+  font-size: clamp(34px, 7vw, 70px);
+  line-height: .96;
+  letter-spacing: 0;
+}
+h2 { font-size: 18px; margin-bottom: 12px; }
+p { color: var(--muted); line-height: 1.55; }
+main {
+  display: grid;
+  gap: 16px;
+  padding-bottom: 40px;
+}
+.summary, .details, .actions, .safety, .constants {
+  background: rgba(255, 253, 247, .82);
+  border: 1px solid rgba(216, 210, 196, .9);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  padding: 18px;
+}
+.summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
+  align-items: end;
+  gap: 18px;
+}
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin: 0;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.metrics div {
+  background: var(--panel);
+  padding: 14px;
+}
+dt {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+dd {
+  margin: 5px 0 0;
+  font-variant-numeric: tabular-nums;
+}
+.metrics dd { font-size: 18px; font-weight: 800; }
+.progress ol {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.progress li {
+  min-height: 124px;
+  display: grid;
+  align-content: start;
+  gap: 9px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 253, 247, .64);
+}
+.progress span {
+  width: 30px;
+  height: 30px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #ebe5d7;
+  font-weight: 850;
+}
+.progress strong { font-size: 15px; }
+.progress small { color: var(--muted); line-height: 1.35; }
+.progress li.done span, .progress li.active span { color: white; background: var(--accent); }
+.progress li.active {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px rgba(15, 118, 110, .22);
+}
+.data-list, .confirm dl {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.data-list div, .confirm dl div {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr);
+  gap: 14px;
+  background: var(--panel);
+  padding: 13px 14px;
+}
+.actions-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: start;
+}
+.wallet-pill {
+  min-width: 150px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+}
+.wallet-pill span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 750;
+}
+.wallet-pill strong { display: block; margin-top: 3px; }
+.action-grid {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+.action-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+}
+.action-row span {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.notice {
+  margin-top: 12px;
+  padding: 13px 14px;
+  border-radius: 8px;
+  line-height: 1.45;
+  border: 1px solid var(--line);
+}
+.notice.ok { color: var(--ok); background: #edf8f1; border-color: #b8dec7; }
+.notice.error { color: var(--bad); background: #fff0ee; border-color: #f3b8b0; }
+.notice.pending { color: var(--warn); background: #fff6e9; border-color: #efd0a3; }
+.notice button { min-height: 34px; margin-left: 8px; padding: 0 10px; }
+.busy {
+  min-height: 20px;
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+.safety ul {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.constant-list {
+  display: grid;
+  gap: 8px;
+}
+.constant-list div {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.constant-list span { color: var(--muted); font-weight: 750; }
+dialog {
+  width: min(620px, calc(100% - 24px));
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, .28);
+}
+dialog::backdrop { background: rgba(23, 23, 23, .45); }
+.confirm { padding: 18px; }
+.check {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 16px 0;
+  line-height: 1.4;
+}
+.check input {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+}
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.is-busy button:not(.icon-button) { cursor: progress; }
+
+@media (max-width: 780px) {
+  .topbar, main { width: min(100% - 20px, 560px); }
+  .topbar { padding-top: 18px; }
+  .summary { grid-template-columns: 1fr; }
+  .metrics, .progress ol { grid-template-columns: 1fr; }
+  .progress li { min-height: auto; }
+  .data-list div, .confirm dl div, .constant-list div {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  .actions-head, .action-row {
+    grid-template-columns: 1fr;
+  }
+  .wallet-pill { width: 100%; }
+  .action-row button, #connectWallet { width: 100%; }
+  h1 { font-size: 42px; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .summary, .progress, .details, .actions, .safety, .constants {
+    animation: rise .42s ease both;
+  }
+  .progress { animation-delay: .04s; }
+  .details { animation-delay: .08s; }
+  .actions { animation-delay: .12s; }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
+</style>
+</head>
+<body>
+  <a class="skip-link" href="#actions">Skip to actions</a>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">Canonical DBK Chain withdrawal</p>
+      <h1>Recover 0.675 ETH to Ethereum</h1>
+    </div>
+    <button id="refreshStatus" class="icon-button" type="button" aria-label="Refresh live status">↻</button>
+  </header>
+
+  <main>
+    <section class="summary" aria-labelledby="summary-title">
+      <div>
+        <h2 id="summary-title">Single verified withdrawal</h2>
+        <p>This page can only prove or finalize the exact DBK withdrawal below. It cannot start a new withdrawal or send ETH directly.</p>
+      </div>
+      <dl class="metrics">
+        <div><dt>Amount</dt><dd id="amount">0.675 ETH</dd></div>
+        <div><dt>Status</dt><dd id="stageLabel">Loading</dd></div>
+        <div><dt>Countdown</dt><dd id="countdown">Loading live status</dd></div>
+      </dl>
+    </section>
+
+    <section class="progress" aria-label="Withdrawal progress">
+      <ol>
+        <li data-step="1"><span>1</span><strong>Initiated on DBK</strong><small>Receipt log verified</small></li>
+        <li data-step="2"><span>2</span><strong>Prove on Ethereum</strong><small>Output root and storage proof</small></li>
+        <li data-step="3"><span>3</span><strong>7 day challenge</strong><small>Exact countdown when proven</small></li>
+        <li data-step="4"><span>4</span><strong>Finalize on Ethereum</strong><small>Claim on mainnet</small></li>
+      </ol>
+    </section>
+
+    <section class="details" aria-labelledby="details-title">
+      <h2 id="details-title">Derived data</h2>
+      <dl class="data-list">
+        <div><dt>Source transaction</dt><dd id="sourceTx">Loading</dd></div>
+        <div><dt>Withdrawal hash</dt><dd><code id="withdrawalHash">Loading</code></dd></div>
+        <div><dt>Source block</dt><dd id="sourceBlock">Loading</dd></div>
+        <div><dt>From / to</dt><dd id="fromTo">Loading</dd></div>
+        <div><dt>Latest oracle output block</dt><dd id="latestOutputBlock">Loading</dd></div>
+        <div><dt>Validation</dt><dd id="derivedStatus">Loading receipt</dd></div>
+      </dl>
+    </section>
+
+    <section id="actions" class="actions" aria-labelledby="actions-title">
+      <div class="actions-head">
+        <div>
+          <h2 id="actions-title">Ethereum actions</h2>
+          <p>Every transaction opens a review screen first and sends only to the OptimismPortal on Ethereum mainnet.</p>
+        </div>
+        <div class="wallet-pill"><span>Wallet</span><strong id="walletState">Not connected</strong></div>
+      </div>
+      <button id="connectWallet" type="button">Connect wallet</button>
+      <div class="action-grid">
+        <div class="action-row">
+          <div><strong>Prove withdrawal</strong><span id="proveHint">Loading status</span></div>
+          <button id="proveBtn" type="button" disabled>Prove</button>
+        </div>
+        <div class="action-row">
+          <div><strong>Finalize withdrawal</strong><span id="finalizeHint">Loading status</span></div>
+          <button id="finalizeBtn" type="button" disabled>Finalize</button>
+        </div>
+      </div>
+      <div id="notice" class="notice pending" role="status" aria-live="polite">Loading live read-only chain status…</div>
+      <p id="busyText" class="busy" aria-live="polite"></p>
+    </section>
+
+    <section class="safety" aria-labelledby="safety-title">
+      <h2 id="safety-title">Safety checks</h2>
+      <ul>
+        <li>No private keys, seed phrases, backend, storage, or secret handling.</li>
+        <li>Signing uses only the injected EIP-1193 wallet provider.</li>
+        <li>Receipt data must match the expected sender, target, amount, contracts, and withdrawal hash.</li>
+        <li>Proof data is built from public DBK and Ethereum RPC calls and checked against the L2OutputOracle before signing.</li>
+        <li>No initiate-withdrawal or direct ETH transfer path exists in this app.</li>
+      </ul>
+    </section>
+
+    <section class="constants" aria-labelledby="constants-title">
+      <h2 id="constants-title">Visible chain constants</h2>
+      <div id="constantList" class="constant-list"></div>
+      <p>Source constants are kept in <code>src/core.js</code> for review.</p>
+    </section>
+  </main>
+
+  <dialog id="confirmDialog" aria-labelledby="confirmTitle">
+    <form method="dialog" class="confirm">
+      <h2 id="confirmTitle">Review Ethereum transaction</h2>
+      <dl>
+        <div><dt>Action</dt><dd id="confirmAction"></dd></div>
+        <div><dt>Chain ID</dt><dd id="confirmChain"></dd></div>
+        <div><dt>OptimismPortal</dt><dd><code id="confirmPortal"></code></dd></div>
+        <div><dt>Withdrawal amount</dt><dd id="confirmAmount"></dd></div>
+        <div><dt>Withdrawal hash</dt><dd><code id="confirmHash"></code></dd></div>
+        <div><dt>Calldata</dt><dd><code id="confirmCalldata"></code></dd></div>
+      </dl>
+      <label class="check"><input id="confirmCheck" type="checkbox"> I verified the chain, portal, action, and amount.</label>
+      <div class="dialog-actions">
+        <button id="confirmCancel" type="button" class="secondary">Cancel</button>
+        <button id="confirmSubmit" type="button" disabled>Submit to wallet</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module">
+const CONSTANTS = Object.freeze({
+  sourceTxHash: '0xbb4b44033ae4e4b7dca09b89d76f4affe62e5c34d9b7f842c44aa18d174fd641',
+  expectedAccount: '0xe20e7766268a864f7e3d75d25f256bb6e69c3078',
+  expectedAmountWei: 675000000000000000n,
+  expectedWithdrawalHash: '0xf571a0b7689a3d405dd63942956f44ba1f7938c108d7dde2e8fb242a941962db',
+  dbkRpc: 'https://rpc.mainnet.dbkchain.io',
+  ethereumRpc: 'https://ethereum-rpc.publicnode.com',
+  dbkChainId: 20240603,
+  ethereumChainId: 1,
+  optimismPortal: '0x63CA00232F471bE2A3Bf3C4e95Bc1d2B3EA5DB92',
+  l2OutputOracle: '0x0341bb689CB8a4c16c61307F4BdA254E1bFD525e',
+  l2ToL1MessagePasser: '0x4200000000000000000000000000000000000016',
+  challengePeriodSeconds: 604800,
+  l2Explorer: 'https://scan.dbkchain.io',
+  l1Explorer: 'https://etherscan.io'
+});
+
+const SELECTORS = Object.freeze({
+  messagePassedTopic: '0x02a52367d10742d8032712c1bb8e0144ff1ec5ffda1ed7d70bb05a2744955054',
+  proveWithdrawalTransaction: '0x4870496f',
+  finalizeWithdrawalTransaction: '0x8c3152e9',
+  l2OutputOracleLatestBlockNumber: '0x4599c788',
+  l2OutputOracleGetL2OutputIndexAfter: '0x7f006420',
+  l2OutputOracleGetL2Output: '0xa25ae557',
+  optimismPortalProvenWithdrawals: '0xe965084c',
+  optimismPortalFinalizedWithdrawals: '0xa14238e7'
+});
+
+const MASK_64 = (1n << 64n) - 1n;
+const ROUND_CONSTANTS = [
+  0x0000000000000001n, 0x0000000000008082n, 0x800000000000808an, 0x8000000080008000n,
+  0x000000000000808bn, 0x0000000080000001n, 0x8000000080008081n, 0x8000000000008009n,
+  0x000000000000008an, 0x0000000000000088n, 0x0000000080008009n, 0x000000008000000an,
+  0x000000008000808bn, 0x800000000000008bn, 0x8000000000008089n, 0x8000000000008003n,
+  0x8000000000008002n, 0x8000000000000080n, 0x000000000000800an, 0x800000008000000an,
+  0x8000000080008081n, 0x8000000000008080n, 0x0000000080000001n, 0x8000000080008008n
+];
+const ROTATION_OFFSETS = [
+  0, 1, 62, 28, 27,
+  36, 44, 6, 55, 20,
+  3, 10, 43, 25, 39,
+  41, 45, 15, 21, 8,
+  18, 2, 61, 56, 14
+];
+const PI_LANES = [
+  0, 10, 20, 5, 15,
+  16, 1, 11, 21, 6,
+  7, 17, 2, 12, 22,
+  23, 8, 18, 3, 13,
+  14, 24, 9, 19, 4
+];
+
+function assert(condition, message) {
+  if (!condition) throw new Error(message);
+}
+
+function strip0x(hex) {
+  assert(typeof hex === 'string', 'Expected hex string');
+  return hex.startsWith('0x') ? hex.slice(2) : hex;
+}
+
+function normalizeHex(hex) {
+  const body = strip0x(hex).toLowerCase();
+  assert(body.length % 2 === 0 && /^[0-9a-f]*$/.test(body), `Invalid hex: ${hex}`);
+  return `0x${body}`;
+}
+
+function sameAddress(a, b) {
+  return String(a).toLowerCase() === String(b).toLowerCase();
+}
+
+function padHex(hex, bytes = 32) {
+  const body = strip0x(typeof hex === 'bigint' ? hex.toString(16) : String(hex)).toLowerCase();
+  assert(body.length <= bytes * 2, `Value exceeds ${bytes} bytes`);
+  assert(/^[0-9a-f]*$/.test(body), `Invalid hex: ${hex}`);
+  return body.padStart(bytes * 2, '0');
+}
+
+function encodeUint(value) {
+  assert(value >= 0n, 'Unsigned integer cannot be negative');
+  return padHex(value);
+}
+
+function encodeAddress(address) {
+  const body = strip0x(address).toLowerCase();
+  assert(/^[0-9a-f]{40}$/.test(body), `Invalid address: ${address}`);
+  return body.padStart(64, '0');
+}
+
+function word(data, index) {
+  const body = strip0x(data);
+  return `0x${body.slice(index * 64, (index + 1) * 64)}`;
+}
+
+function hexToBytes(hex) {
+  const body = strip0x(hex);
+  assert(body.length % 2 === 0 && /^[0-9a-fA-F]*$/.test(body), `Invalid bytes: ${hex}`);
+  const out = new Uint8Array(body.length / 2);
+  for (let i = 0; i < out.length; i += 1) out[i] = parseInt(body.slice(i * 2, i * 2 + 2), 16);
+  return out;
+}
+
+function bytesToHex(bytes) {
+  return `0x${Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')}`;
+}
+
+function rotl64(value, shift) {
+  if (shift === 0) return value & MASK_64;
+  const n = BigInt(shift);
+  return ((value << n) | (value >> (64n - n))) & MASK_64;
+}
+
+function keccakF1600(state) {
+  for (let round = 0; round < 24; round += 1) {
+    const c = new Array(5);
+    const d = new Array(5);
+    for (let x = 0; x < 5; x += 1) c[x] = state[x] ^ state[x + 5] ^ state[x + 10] ^ state[x + 15] ^ state[x + 20];
+    for (let x = 0; x < 5; x += 1) d[x] = c[(x + 4) % 5] ^ rotl64(c[(x + 1) % 5], 1);
+    for (let i = 0; i < 25; i += 5) {
+      for (let x = 0; x < 5; x += 1) state[i + x] = (state[i + x] ^ d[x]) & MASK_64;
+    }
+    const b = new Array(25);
+    for (let i = 0; i < 25; i += 1) b[PI_LANES[i]] = rotl64(state[i], ROTATION_OFFSETS[i]);
+    for (let y = 0; y < 25; y += 5) {
+      for (let x = 0; x < 5; x += 1) state[y + x] = (b[y + x] ^ ((~b[y + ((x + 1) % 5)] & MASK_64) & b[y + ((x + 2) % 5)])) & MASK_64;
+    }
+    state[0] = (state[0] ^ ROUND_CONSTANTS[round]) & MASK_64;
+  }
+}
+
+function keccak256(data) {
+  const bytes = typeof data === 'string' ? hexToBytes(data) : data;
+  const rate = 136;
+  const state = new Array(25).fill(0n);
+  const block = new Uint8Array(rate);
+  let offset = 0;
+  while (offset < bytes.length) {
+    block.fill(0);
+    const take = Math.min(rate, bytes.length - offset);
+    block.set(bytes.slice(offset, offset + take));
+    offset += take;
+    if (take < rate) {
+      block[take] ^= 0x01;
+      block[rate - 1] ^= 0x80;
+    }
+    for (let i = 0; i < rate / 8; i += 1) {
+      let lane = 0n;
+      for (let j = 0; j < 8; j += 1) lane |= BigInt(block[i * 8 + j]) << (8n * BigInt(j));
+      state[i] = (state[i] ^ lane) & MASK_64;
+    }
+    keccakF1600(state);
+    if (take === rate && offset === bytes.length) {
+      block.fill(0);
+      block[0] ^= 0x01;
+      block[rate - 1] ^= 0x80;
+      for (let i = 0; i < rate / 8; i += 1) {
+        let lane = 0n;
+        for (let j = 0; j < 8; j += 1) lane |= BigInt(block[i * 8 + j]) << (8n * BigInt(j));
+        state[i] = (state[i] ^ lane) & MASK_64;
+      }
+      keccakF1600(state);
+    }
+  }
+  if (bytes.length === 0) {
+    block.fill(0);
+    block[0] = 0x01;
+    block[rate - 1] ^= 0x80;
+    for (let i = 0; i < rate / 8; i += 1) {
+      let lane = 0n;
+      for (let j = 0; j < 8; j += 1) lane |= BigInt(block[i * 8 + j]) << (8n * BigInt(j));
+      state[i] = (state[i] ^ lane) & MASK_64;
+    }
+    keccakF1600(state);
+  }
+  const out = new Uint8Array(32);
+  for (let i = 0; i < 4; i += 1) {
+    let lane = state[i];
+    for (let j = 0; j < 8; j += 1) {
+      out[i * 8 + j] = Number(lane & 0xffn);
+      lane >>= 8n;
+    }
+  }
+  return bytesToHex(out);
+}
+
+function encodeWithdrawalTuple(withdrawal) {
+  const data = strip0x(withdrawal.data || '0x');
+  assert(data.length % 2 === 0, 'Withdrawal calldata must be bytes');
+  const paddedData = data.padEnd(Math.ceil(data.length / 64) * 64, '0');
+  return [
+    encodeUint(BigInt(withdrawal.nonce)),
+    encodeAddress(withdrawal.sender),
+    encodeAddress(withdrawal.target),
+    encodeUint(BigInt(withdrawal.value)),
+    encodeUint(BigInt(withdrawal.gasLimit)),
+    encodeUint(192n),
+    encodeUint(BigInt(data.length / 2)),
+    paddedData
+  ].join('');
+}
+
+function hashWithdrawal(withdrawal) {
+  return keccak256(`0x${encodeWithdrawalTuple(withdrawal)}`);
+}
+
+function parseMessagePassed(log) {
+  assert(log && sameAddress(log.address, CONSTANTS.l2ToL1MessagePasser), 'Receipt log is not from L2ToL1MessagePasser');
+  assert(log.topics?.[0]?.toLowerCase() === SELECTORS.messagePassedTopic, 'Receipt log is not MessagePassed');
+  assert(log.topics.length === 4, 'MessagePassed log has unexpected topics');
+  const data = normalizeHex(log.data);
+  const dataOffset = Number(BigInt(word(data, 2)));
+  const dataLength = Number(BigInt(word(data, dataOffset / 32)));
+  const dataStart = 2 + (dataOffset + 32) * 2;
+  const messageData = `0x${strip0x(data).slice(dataStart - 2, dataStart - 2 + dataLength * 2)}`;
+  const parsed = {
+    nonce: BigInt(log.topics[1]),
+    sender: `0x${log.topics[2].slice(26).toLowerCase()}`,
+    target: `0x${log.topics[3].slice(26).toLowerCase()}`,
+    value: BigInt(word(data, 0)),
+    gasLimit: BigInt(word(data, 1)),
+    data: normalizeHex(messageData),
+    withdrawalHash: word(data, 3).toLowerCase(),
+    blockNumber: Number(BigInt(log.blockNumber)),
+    transactionHash: log.transactionHash?.toLowerCase()
+  };
+  const computedHash = hashWithdrawal(parsed).toLowerCase();
+  assert(computedHash === parsed.withdrawalHash, `Withdrawal hash mismatch: computed ${computedHash}, log ${parsed.withdrawalHash}`);
+  return parsed;
+}
+
+function deriveExpectedWithdrawal(receipt) {
+  assert(receipt, 'DBK receipt not found');
+  assert(receipt.transactionHash?.toLowerCase() === CONSTANTS.sourceTxHash, 'DBK receipt transaction hash mismatch');
+  assert(receipt.status === '0x1', 'DBK withdrawal transaction did not succeed');
+  if (receipt.from) assert(sameAddress(receipt.from, CONSTANTS.expectedAccount), 'DBK receipt from address mismatch');
+  const matches = (receipt.logs || []).filter((log) =>
+    sameAddress(log.address, CONSTANTS.l2ToL1MessagePasser) &&
+    log.topics?.[0]?.toLowerCase() === SELECTORS.messagePassedTopic
+  );
+  assert(matches.length === 1, `Expected exactly one MessagePassed log, found ${matches.length}`);
+  const withdrawal = parseMessagePassed(matches[0]);
+  assert(sameAddress(withdrawal.sender, CONSTANTS.expectedAccount), 'Withdrawal sender mismatch');
+  assert(sameAddress(withdrawal.target, CONSTANTS.expectedAccount), 'Withdrawal target mismatch');
+  assert(withdrawal.value === CONSTANTS.expectedAmountWei, 'Withdrawal amount mismatch');
+  assert(withdrawal.data === '0x', 'Withdrawal calldata is not empty');
+  assert(withdrawal.withdrawalHash === CONSTANTS.expectedWithdrawalHash, 'Expected withdrawal hash mismatch');
+  return Object.freeze(withdrawal);
+}
+
+function sentMessageStorageSlot(withdrawalHash) {
+  return keccak256(`0x${padHex(withdrawalHash)}${encodeUint(0n)}`);
+}
+
+function computeOutputRoot({ stateRoot, messagePasserStorageRoot, latestBlockhash }) {
+  return keccak256(`0x${encodeUint(0n)}${padHex(stateRoot)}${padHex(messagePasserStorageRoot)}${padHex(latestBlockhash)}`);
+}
+
+function encodeBytesArray(items) {
+  let head = encodeUint(BigInt(items.length));
+  let offsets = '';
+  let bodies = '';
+  let cursor = items.length * 32;
+  for (const item of items) {
+    const body = strip0x(normalizeHex(item));
+    const padded = body.padEnd(Math.ceil(body.length / 64) * 64, '0');
+    offsets += encodeUint(BigInt(cursor));
+    bodies += encodeUint(BigInt(body.length / 2)) + padded;
+    cursor += 32 + padded.length / 2;
+  }
+  return head + offsets + bodies;
+}
+
+function encodeProveWithdrawalTransaction(withdrawal, outputIndex, outputRootProof, withdrawalProof) {
+  const withdrawalTuple = encodeWithdrawalTuple(withdrawal);
+  const withdrawalOffset = 7n * 32n;
+  const proofOffset = withdrawalOffset + BigInt(withdrawalTuple.length / 2);
+  return [
+    SELECTORS.proveWithdrawalTransaction,
+    encodeUint(withdrawalOffset),
+    encodeUint(BigInt(outputIndex)),
+    encodeUint(0n),
+    padHex(outputRootProof.stateRoot),
+    padHex(outputRootProof.messagePasserStorageRoot),
+    padHex(outputRootProof.latestBlockhash),
+    encodeUint(proofOffset),
+    withdrawalTuple,
+    encodeBytesArray(withdrawalProof)
+  ].join('');
+}
+
+function encodeFinalizeWithdrawalTransaction(withdrawal) {
+  return `${SELECTORS.finalizeWithdrawalTransaction}${encodeUint(32n)}${encodeWithdrawalTuple(withdrawal)}`;
+}
+
+function parseL2Output(raw) {
+  // OutputProposal is three ABI words: bytes32 outputRoot, uint128 timestamp,
+  // and uint128 l2BlockNumber. ABI still pads each uint128 to a full word.
+  assert(raw && strip0x(raw).length >= 192, 'Invalid L2OutputOracle response');
+  return {
+    outputRoot: word(raw, 0).toLowerCase(),
+    timestamp: Number(BigInt(word(raw, 1))),
+    l2BlockNumber: Number(BigInt(word(raw, 2)))
+  };
+}
+
+function parseProvenWithdrawal(raw) {
+  if (!raw || raw === '0x' || BigInt(word(raw, 1) || '0x0') === 0n) {
+    return { outputRoot: null, timestamp: 0, l2OutputIndex: null };
+  }
+  return {
+    outputRoot: word(raw, 0).toLowerCase(),
+    timestamp: Number(BigInt(word(raw, 1))),
+    l2OutputIndex: BigInt(word(raw, 2))
+  };
+}
+
+function parseBoolWord(raw) {
+  if (!raw || raw === '0x') return false;
+  return BigInt(raw) === 1n;
+}
+
+function computeStage({ withdrawalBlockNumber, latestOutputBlockNumber, provenTimestamp, finalized, nowSeconds }) {
+  if (finalized) return { id: 'finalized', index: 4, label: 'Finalized', canProve: false, canFinalize: false, countdownSeconds: 0 };
+  if (provenTimestamp > 0) {
+    const unlock = provenTimestamp + CONSTANTS.challengePeriodSeconds;
+    if (nowSeconds >= unlock) return { id: 'ready-finalize', index: 4, label: 'Ready to finalize', canProve: false, canFinalize: true, countdownSeconds: 0 };
+    return { id: 'challenge', index: 3, label: 'Challenge period', canProve: false, canFinalize: false, countdownSeconds: unlock - nowSeconds };
+  }
+  if (latestOutputBlockNumber >= withdrawalBlockNumber) return { id: 'ready-prove', index: 2, label: 'Ready to prove', canProve: true, canFinalize: false, countdownSeconds: 0 };
+  return { id: 'waiting-output', index: 1, label: 'Waiting for L2 output', canProve: false, canFinalize: false, countdownSeconds: 0 };
+}
+
+function formatEther(wei) {
+  const whole = wei / 10n ** 18n;
+  const frac = (wei % 10n ** 18n).toString().padStart(18, '0').replace(/0+$/, '');
+  return `${whole}${frac ? `.${frac}` : ''}`;
+}
+
+function formatDuration(seconds) {
+  const s = Math.max(0, Number(seconds));
+  const days = Math.floor(s / 86400);
+  const hours = Math.floor((s % 86400) / 3600);
+  const minutes = Math.floor((s % 3600) / 60);
+  const secs = s % 60;
+  return `${days}d ${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m ${String(secs).padStart(2, '0')}s`;
+}
+
+const state = {
+  account: null,
+  receipt: null,
+  withdrawal: null,
+  latestOutputBlockNumber: 0,
+  proven: { timestamp: 0 },
+  finalized: false,
+  stage: null,
+  inFlight: false
+};
+
+const $ = (id) => document.getElementById(id);
+
+async function rpc(url, method, params) {
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ jsonrpc: '2.0', id: Date.now(), method, params })
+  });
+  if (!response.ok) throw new Error(`RPC HTTP ${response.status}`);
+  const payload = await response.json();
+  if (payload.error) throw new Error(payload.error.message || 'RPC error');
+  return payload.result;
+}
+
+function short(value) {
+  if (!value) return '0x';
+  return `${value.slice(0, 8)}…${value.slice(-6)}`;
+}
+
+function link(url, text) {
+  return `<a href="${url}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+}
+
+function setNotice(type, message) {
+  const el = $('notice');
+  el.className = `notice ${type}`;
+  el.innerHTML = message;
+}
+
+function setBusy(isBusy, label = '') {
+  state.inFlight = isBusy;
+  $('busyText').textContent = label;
+  document.body.classList.toggle('is-busy', isBusy);
+  renderActions();
+}
+
+function requireProvider() {
+  assert(window.ethereum?.request, 'No injected EIP-1193 wallet was found. Open this page in Rabby mobile or another injected-wallet browser.');
+  return window.ethereum;
+}
+
+async function connectWallet() {
+  const provider = requireProvider();
+  const accounts = await provider.request({ method: 'eth_requestAccounts' });
+  state.account = accounts?.[0] || null;
+  if (!state.account) throw new Error('Wallet did not return an account.');
+  renderWallet();
+  renderActions();
+}
+
+async function ensureEthereumWallet() {
+  const provider = requireProvider();
+  const chainId = await provider.request({ method: 'eth_chainId' });
+  if (BigInt(chainId) === BigInt(CONSTANTS.ethereumChainId)) return chainId;
+  await provider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x1' }] });
+  const after = await provider.request({ method: 'eth_chainId' });
+  assert(BigInt(after) === 1n, `Wallet is on chain ${BigInt(after).toString()}, not Ethereum mainnet.`);
+  return after;
+}
+
+async function loadChainStatus() {
+  setBusy(true, 'Loading live DBK and Ethereum status…');
+  try {
+    const [receipt, latestOutputRaw, provenRaw, finalizedRaw, l1ChainHex, l2ChainHex] = await Promise.all([
+      rpc(CONSTANTS.dbkRpc, 'eth_getTransactionReceipt', [CONSTANTS.sourceTxHash]),
+      rpc(CONSTANTS.ethereumRpc, 'eth_call', [{ to: CONSTANTS.l2OutputOracle, data: SELECTORS.l2OutputOracleLatestBlockNumber }, 'latest']),
+      rpc(CONSTANTS.ethereumRpc, 'eth_call', [{ to: CONSTANTS.optimismPortal, data: SELECTORS.optimismPortalProvenWithdrawals + padHex(CONSTANTS.expectedWithdrawalHash) }, 'latest']),
+      rpc(CONSTANTS.ethereumRpc, 'eth_call', [{ to: CONSTANTS.optimismPortal, data: SELECTORS.optimismPortalFinalizedWithdrawals + padHex(CONSTANTS.expectedWithdrawalHash) }, 'latest']),
+      rpc(CONSTANTS.ethereumRpc, 'eth_chainId', []),
+      rpc(CONSTANTS.dbkRpc, 'eth_chainId', [])
+    ]);
+    assert(Number(BigInt(l1ChainHex)) === CONSTANTS.ethereumChainId, 'Ethereum RPC chain ID mismatch.');
+    assert(Number(BigInt(l2ChainHex)) === CONSTANTS.dbkChainId, 'DBK RPC chain ID mismatch.');
+    state.receipt = receipt;
+    state.withdrawal = deriveExpectedWithdrawal(receipt);
+    state.latestOutputBlockNumber = Number(BigInt(latestOutputRaw));
+    state.proven = parseProvenWithdrawal(provenRaw);
+    state.finalized = parseBoolWord(finalizedRaw);
+    updateStage();
+    renderAll();
+    setNotice('ok', 'Live read-only checks passed. Withdrawal data was derived from the DBK receipt and matches the expected constants.');
+  } catch (error) {
+    setNotice('error', `Fail closed: ${escapeHtml(error.message)} <button type="button" id="retryStatusInline">Retry</button>`);
+    $('retryStatusInline')?.addEventListener('click', loadChainStatus);
+  } finally {
+    setBusy(false);
+  }
+}
+
+function updateStage() {
+  if (!state.withdrawal) return;
+  state.stage = computeStage({
+    withdrawalBlockNumber: state.withdrawal.blockNumber,
+    latestOutputBlockNumber: state.latestOutputBlockNumber,
+    provenTimestamp: state.proven.timestamp,
+    finalized: state.finalized,
+    nowSeconds: Math.floor(Date.now() / 1000)
+  });
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+}
+
+function renderAll() {
+  renderWithdrawal();
+  renderProgress();
+  renderWallet();
+  renderActions();
+  renderConstants();
+}
+
+function renderWithdrawal() {
+  const w = state.withdrawal;
+  if (!w) return;
+  $('amount').textContent = `${formatEther(w.value)} ETH`;
+  $('sourceTx').innerHTML = link(`${CONSTANTS.l2Explorer}/tx/${CONSTANTS.sourceTxHash}`, short(CONSTANTS.sourceTxHash));
+  $('withdrawalHash').textContent = short(w.withdrawalHash);
+  $('sourceBlock').textContent = w.blockNumber.toLocaleString('en-US');
+  $('fromTo').textContent = `${short(w.sender)} → ${short(w.target)}`;
+  $('derivedStatus').textContent = 'Verified from MessagePassed log';
+}
+
+function renderProgress() {
+  updateStage();
+  const stage = state.stage;
+  document.querySelectorAll('[data-step]').forEach((el) => {
+    const step = Number(el.dataset.step);
+    el.classList.toggle('done', step < stage.index || stage.id === 'finalized');
+    el.classList.toggle('active', step === stage.index && stage.id !== 'finalized');
+  });
+  $('stageLabel').textContent = stage.label;
+  $('latestOutputBlock').textContent = state.latestOutputBlockNumber ? state.latestOutputBlockNumber.toLocaleString('en-US') : 'Loading';
+  if (stage.id === 'challenge') {
+    $('countdown').textContent = formatDuration(stage.countdownSeconds);
+  } else if (stage.id === 'ready-finalize') {
+    $('countdown').textContent = 'Challenge period complete';
+  } else if (stage.id === 'finalized') {
+    $('countdown').textContent = 'Withdrawal finalized on Ethereum';
+  } else if (stage.id === 'ready-prove') {
+    $('countdown').textContent = 'Proof can be submitted now';
+  } else {
+    $('countdown').textContent = `Waiting for oracle output covering DBK block ${state.withdrawal?.blockNumber?.toLocaleString('en-US') || '...'}`;
+  }
+}
+
+function renderWallet() {
+  $('walletState').textContent = state.account ? short(state.account) : 'Not connected';
+  $('connectWallet').textContent = state.account ? 'Wallet connected' : 'Connect wallet';
+}
+
+function renderActions() {
+  const canUseWallet = Boolean(window.ethereum?.request);
+  $('connectWallet').disabled = state.inFlight || !canUseWallet || Boolean(state.account);
+  $('proveBtn').disabled = state.inFlight || !state.stage?.canProve || !state.account;
+  $('finalizeBtn').disabled = state.inFlight || !state.stage?.canFinalize || !state.account;
+  $('proveHint').textContent = !state.account ? 'Connect a wallet before proving.' : state.stage?.canProve ? 'Ready. You will review details before the wallet opens.' : 'Not available at the current stage.';
+  $('finalizeHint').textContent = !state.account ? 'Connect a wallet before finalizing.' : state.stage?.canFinalize ? 'Ready. You will review details before the wallet opens.' : 'Not available at the current stage.';
+}
+
+function renderConstants() {
+  $('constantList').innerHTML = [
+    ['DBK RPC chain ID', `${CONSTANTS.dbkChainId}`],
+    ['Ethereum chain ID', `${CONSTANTS.ethereumChainId}`],
+    ['OptimismPortal', CONSTANTS.optimismPortal],
+    ['L2OutputOracle', CONSTANTS.l2OutputOracle],
+    ['L2ToL1MessagePasser', CONSTANTS.l2ToL1MessagePasser],
+    ['Challenge period', `${CONSTANTS.challengePeriodSeconds} seconds`]
+  ].map(([label, value]) => `<div><span>${label}</span><code>${value}</code></div>`).join('');
+}
+
+async function buildProof() {
+  const w = state.withdrawal;
+  assert(w, 'Withdrawal has not been loaded.');
+  assert(state.stage?.canProve, 'Withdrawal is not ready to prove.');
+  const outputIndexHex = await rpc(
+    CONSTANTS.ethereumRpc,
+    'eth_call',
+    [{ to: CONSTANTS.l2OutputOracle, data: SELECTORS.l2OutputOracleGetL2OutputIndexAfter + encodeUint(BigInt(w.blockNumber)) }, 'latest']
+  );
+  const outputIndex = BigInt(outputIndexHex);
+  const outputRaw = await rpc(
+    CONSTANTS.ethereumRpc,
+    'eth_call',
+    [{ to: CONSTANTS.l2OutputOracle, data: SELECTORS.l2OutputOracleGetL2Output + encodeUint(outputIndex) }, 'latest']
+  );
+  const output = parseL2Output(outputRaw);
+  assert(output.l2BlockNumber >= w.blockNumber, 'Oracle returned an output before the withdrawal block.');
+  const blockTag = `0x${output.l2BlockNumber.toString(16)}`;
+  const [l2Block, accountProof] = await Promise.all([
+    rpc(CONSTANTS.dbkRpc, 'eth_getBlockByNumber', [blockTag, false]),
+    rpc(CONSTANTS.dbkRpc, 'eth_getProof', [CONSTANTS.l2ToL1MessagePasser, [sentMessageStorageSlot(w.withdrawalHash)], blockTag])
+  ]);
+  const storageProof = accountProof.storageProof?.[0];
+  assert(storageProof, 'DBK RPC did not return a storage proof.');
+  assert(BigInt(storageProof.value) === 1n, 'Withdrawal storage slot is not marked sent in the selected output.');
+  const computedRoot = computeOutputRoot({
+    stateRoot: l2Block.stateRoot,
+    messagePasserStorageRoot: accountProof.storageHash,
+    latestBlockhash: l2Block.hash
+  });
+  assert(computedRoot === output.outputRoot, `Output root mismatch: computed ${computedRoot}, oracle ${output.outputRoot}`);
+  return {
+    outputIndex,
+    calldata: encodeProveWithdrawalTransaction(w, outputIndex, {
+      stateRoot: l2Block.stateRoot,
+      messagePasserStorageRoot: accountProof.storageHash,
+      latestBlockhash: l2Block.hash
+    }, storageProof.proof),
+    output
+  };
+}
+
+function showConfirm({ action, calldata, onConfirm }) {
+  const modal = $('confirmDialog');
+  $('confirmAction').textContent = action;
+  $('confirmChain').textContent = `Ethereum mainnet (${CONSTANTS.ethereumChainId})`;
+  $('confirmPortal').textContent = CONSTANTS.optimismPortal;
+  $('confirmAmount').textContent = `${formatEther(CONSTANTS.expectedAmountWei)} ETH`;
+  $('confirmHash').textContent = CONSTANTS.expectedWithdrawalHash;
+  $('confirmCalldata').textContent = `${calldata.slice(0, 18)}…${calldata.slice(-16)}`;
+  $('confirmCheck').checked = false;
+  $('confirmSubmit').disabled = true;
+  modal.showModal();
+  const submit = $('confirmSubmit');
+  const cancel = $('confirmCancel');
+  const check = $('confirmCheck');
+  const update = () => { submit.disabled = !check.checked; };
+  const cleanup = () => {
+    submit.removeEventListener('click', submitHandler);
+    cancel.removeEventListener('click', cancelHandler);
+    check.removeEventListener('change', update);
+  };
+  const cancelHandler = () => { cleanup(); modal.close(); };
+  const submitHandler = async () => {
+    cleanup();
+    modal.close();
+    try {
+      await onConfirm();
+    } catch (error) {
+      setBusy(false);
+      setNotice('error', `Transaction not submitted: ${escapeHtml(error.message || error)}`);
+    }
+  };
+  check.addEventListener('change', update);
+  cancel.addEventListener('click', cancelHandler);
+  submit.addEventListener('click', submitHandler);
+}
+
+async function sendL1Transaction(calldata, label) {
+  await ensureEthereumWallet();
+  const provider = requireProvider();
+  const chainId = await provider.request({ method: 'eth_chainId' });
+  assert(BigInt(chainId) === 1n, 'Wallet chain changed before signing.');
+  assert(samePortalAddress(CONSTANTS.optimismPortal), 'OptimismPortal constant changed unexpectedly.');
+  const txHash = await provider.request({
+    method: 'eth_sendTransaction',
+    params: [{ from: state.account, to: CONSTANTS.optimismPortal, data: calldata, value: '0x0' }]
+  });
+  setNotice('pending', `${label} transaction submitted. ${link(`${CONSTANTS.l1Explorer}/tx/${txHash}`, 'View on Etherscan')}`);
+  const receipt = await waitForReceipt(txHash);
+  if (receipt.status !== '0x1') throw new Error(`${label} transaction reverted.`);
+  setNotice('ok', `${label} confirmed. ${link(`${CONSTANTS.l1Explorer}/tx/${txHash}`, 'View transaction')}`);
+  await loadChainStatus();
+}
+
+function samePortalAddress(value) {
+  return value.toLowerCase() === '0x63ca00232f471be2a3bf3c4e95bc1d2b3ea5db92';
+}
+
+async function waitForReceipt(txHash) {
+  for (let attempt = 0; attempt < 80; attempt += 1) {
+    const receipt = await rpc(CONSTANTS.ethereumRpc, 'eth_getTransactionReceipt', [txHash]);
+    if (receipt) return receipt;
+    await new Promise((resolve) => setTimeout(resolve, 6000));
+  }
+  throw new Error('Transaction is still pending after several minutes. Check Etherscan and refresh this page.');
+}
+
+async function prove() {
+  try {
+    setBusy(true, 'Building withdrawal proof…');
+    const proof = await buildProof();
+    setBusy(false);
+    showConfirm({
+      action: 'proveWithdrawalTransaction',
+      calldata: proof.calldata,
+      onConfirm: async () => {
+        setBusy(true, 'Waiting for Ethereum prove confirmation…');
+        await sendL1Transaction(proof.calldata, 'Prove');
+        setBusy(false);
+      }
+    });
+  } catch (error) {
+    setBusy(false);
+    setNotice('error', `Cannot prove: ${escapeHtml(error.message)} <button type="button" id="retryProveInline">Retry proof</button>`);
+    $('retryProveInline')?.addEventListener('click', prove);
+  }
+}
+
+async function finalize() {
+  try {
+    assert(state.stage?.canFinalize, 'Withdrawal is not ready to finalize.');
+    const calldata = encodeFinalizeWithdrawalTransaction(state.withdrawal);
+    showConfirm({
+      action: 'finalizeWithdrawalTransaction',
+      calldata,
+      onConfirm: async () => {
+        setBusy(true, 'Waiting for Ethereum finalize confirmation…');
+        await sendL1Transaction(calldata, 'Finalize');
+        setBusy(false);
+      }
+    });
+  } catch (error) {
+    setBusy(false);
+    setNotice('error', `Cannot finalize: ${escapeHtml(error.message)} <button type="button" id="retryFinalizeInline">Retry finalize</button>`);
+    $('retryFinalizeInline')?.addEventListener('click', finalize);
+  }
+}
+
+function bindEvents() {
+  $('connectWallet').addEventListener('click', () => connectWallet().catch((error) => setNotice('error', escapeHtml(error.message))));
+  $('refreshStatus').addEventListener('click', loadChainStatus);
+  $('proveBtn').addEventListener('click', prove);
+  $('finalizeBtn').addEventListener('click', finalize);
+  window.ethereum?.on?.('accountsChanged', (accounts) => {
+    state.account = accounts?.[0] || null;
+    renderWallet();
+    renderActions();
+  });
+  window.ethereum?.on?.('chainChanged', renderActions);
+}
+
+function init() {
+  bindEvents();
+  renderConstants();
+  if (!window.ethereum?.request) setNotice('pending', 'Live status works without a wallet. To submit L1 transactions, open in Rabby mobile or another injected-wallet browser.');
+  window.ethereum?.request({ method: 'eth_accounts' }).then((accounts) => {
+    state.account = accounts?.[0] || null;
+    renderWallet();
+    renderActions();
+  }).catch(() => {});
+  loadChainStatus();
+  setInterval(() => {
+    if (state.withdrawal) {
+      updateStage();
+      renderProgress();
+      renderActions();
+    }
+  }, 1000);
+}
+
+init();
+
+</script>
+</body>
+</html>
