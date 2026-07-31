@@ -942,8 +942,9 @@ function renderWallet() {
 }
 
 function renderActions() {
-  const canUseWallet = Boolean(window.ethereum?.request);
-  $('connectWallet').disabled = state.inFlight || !canUseWallet || Boolean(state.account);
+  // Mobile wallets can inject window.ethereum after the page's first script
+  // pass. Keep Connect actionable so a later user gesture can discover it.
+  $('connectWallet').disabled = state.inFlight || Boolean(state.account);
   $('proveBtn').disabled = state.inFlight || !state.stage?.canProve || !state.account;
   $('finalizeBtn').disabled = state.inFlight || !state.stage?.canFinalize || !state.account;
   $('proveHint').textContent = !state.account ? 'Connect a wallet before proving.' : state.stage?.canProve ? 'Ready. You will review details before the wallet opens.' : 'Not available at the current stage.';
